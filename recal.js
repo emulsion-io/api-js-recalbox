@@ -9,8 +9,8 @@ const user = {
 
 class Recal {
 
-	cookie = false;
 	recal;
+	cookie = null;
 	baseAxio =	{
 		baseURL: url,
 		timeout: 10000,
@@ -20,36 +20,86 @@ class Recal {
 		this.recal = axios.create(this.baseAxio);
 	}
 
-	getParser(option) {
+	async login() {
+
+		if (this.cookie === null) {
+
+			return await this._getParser("needAuth").then( async (returnval) => {
+
+				console.log('test si besoin auth');
+
+				if(returnval.needAuth === true) {
+
+					console.log('need auth', returnval.needAuth);
+
+					if ( user.login === "" || user.password === "") {
+						console.log("login or password empty");
+						return;
+					} else {
+
+						let option = {
+							"login": user.login,
+							"password": user.password
+						};
+
+						return await this._postAction("login", option).then( async (returnval) => {
+
+							let cookie1s = returnval.headers['set-cookie'][0].split(';')
+							let cookie2s = returnval.headers['set-cookie'][1].split(';')
+							
+							this.cookie = cookie1s[0] + '; ' + cookie2s[0]
+
+							this.baseAxio.headers = {
+								'Cookie': this.cookie
+							}
+							
+							console.log('login ok');
+
+							this.recal = axios.create(this.baseAxio);
+
+							return 'logged';
+
+						});
+
+					}
+				} else {
+					console.log('no need auth');
+				}
+			});
+		} else {
+			console.log('deja log');
+		}
+	}
+
+	_getParser(option) {
 		return this.recal.get('/get?option=' + option)
 			.then(function (response) {
 				return response.data.data;
 			})
 	}
 
-	grepParser(option) {
+	_grepParser(option) {
 		return this.recal.get('/grep?keys=' + option.join("|"))
 			.then(function (response) {
 				return response.data.data;
 			})
 	}
 
-	postSave(option) {
+	_postSave(option) {
 		let payload = option;
 		return this.recal.post('/save', payload)
 			.then(function (response) {
-				
 				return response.data.data;
 			})
 	}
 
-	postAction(option, payload = {}) {
+	_postAction(option, payload = {}) {
 		return this.recal.post('/post?action=' + option, payload)
 			.then(function (response) {
 				return response;
 			})
 			.catch(function (error) {
-			  console.log(error);
+			  console.log('erreur', error);
 			})
 	}
 
@@ -59,8 +109,8 @@ class Recal {
 	getTemp() {
 		var option = "temperature"
 
-		this.getParser(option).then((returnval) => {
-			console.log(returnval.temperature.current);
+		this._getParser(option).then((returnval) => {
+			console.log('temp', returnval.temperature.current);
 		});
 	}
 
@@ -70,8 +120,8 @@ class Recal {
 	getCpu() {
 		var option = "cpus"
 
-		this.getParser(option).then((returnval) => {
-			console.log(returnval.cpus);
+		this._getParser(option).then((returnval) => {
+			console.log('cpus', returnval.cpus);
 		});
 	}
 
@@ -81,8 +131,8 @@ class Recal {
 	getRam() {
 		var option = "ram"
 
-		this.getParser(option).then((returnval) => {
-			console.log(returnval.ram);
+		this._getParser(option).then((returnval) => {
+			console.log('ram', returnval.ram);
 		});
 	}
 
@@ -92,8 +142,8 @@ class Recal {
 	getDisk() {
 		var option = "disks"
 
-		this.getParser(option).then((returnval) => {
-			console.log(returnval.disks);
+		this._getParser(option).then((returnval) => {
+			console.log('disks', returnval.disks);
 		});
 	}
 
@@ -103,8 +153,8 @@ class Recal {
 	 getVolume() {
 		var option = ['audio.device','audio.volume','audio.bgmusic']
 
-		this.grepParser(option).then((returnval) => {
-			console.log(returnval);
+		this._grepParser(option).then((returnval) => {
+			console.log('Volume :', returnval['audio.volume'].value);
 		});
 	}
 
@@ -113,8 +163,8 @@ class Recal {
 			'audio.volume': volume
 		}
 
-		this.postSave(option).then((returnval) => {
-			console.log(returnval);
+		this._postSave(option).then((returnval) => {
+			console.log('saveVolume', returnval);
 		});
 	}
 
@@ -125,7 +175,7 @@ class Recal {
 			"kodi.xbutton": "0"
 		}
 
-		this.postSave(option).then((returnval) => {
+		this._postSave(option).then((returnval) => {
 			console.log(returnval);
 		});
 	}
@@ -140,32 +190,27 @@ class Recal {
 			"wifi.pass": passw
 		}
 
-		this.postSave(option).then((returnval) => {
+		this._postSave(option).then((returnval) => {
 			console.log(returnval);
 		});
 	}
 
-	actionTakeScreen() {
+	takeScreen() {
 		var action = "takeScreenshot"
 
-		this.actionNeedAuth().then(() => {
-
-			this.postAction(action).then((returnval) => {
-				console.log(returnval);
-			});
-
+		this._postAction(action).then((returnval) => {
+				console.log('actionTakeScreen', returnval.data);
 		});
-		
 	}
 
-	actionDelScreen(file) {
+	delScreen(file) {
 		var action = "deleteScreenshot"
 
 		var option = {
 			"file": file
 		}
 
-		this.postAction(action, option).then((returnval) => {
+		this._postAction(action, option).then((returnval) => {
 			console.log(returnval);
 		});
 	}
@@ -173,7 +218,7 @@ class Recal {
 	getScreen() {
 		var action = "screenshotsList"
 
-		this.getParser(action).then((returnval) => {
+		this._getParser(action).then((returnval) => {
 			console.log(returnval.screenshotsList);
 		});
 	}
@@ -184,101 +229,62 @@ class Recal {
 	getStatusES() {
 		var option = "ESStatus"
 
-		this.getParser(option).then((returnval) => {
+		this._getParser(option).then((returnval) => {
 			console.log(returnval.ESStatus);
 		});
 	}
 
-	actionRebootES(action) {
+	rebootES(action) {
 		var action = "reboot-es"
 
-		this.postAction(action).then((returnval) => {
+		this._postAction(action).then((returnval) => {
 			console.log(returnval);
 		});
 	}
 
-	actionShutdownES(action) {
+	shutdownES(action) {
 		var action = "shutdown-es"
 
-		this.postAction(action).then((returnval) => {
+		this._postAction(action).then((returnval) => {
 			console.log(returnval);
 		});
 	}
 
-	actionStartES(action) {
+	startES(action) {
 		var action = "start-es"
 
-		this.postAction(action).then((returnval) => {
+		this._postAction(action).then((returnval) => {
 			console.log(returnval);
 		});
 	}
 
-	actionRebootOS(action) {
+	rebootOS(action) {
 		var action = "reboot-os"
 
-		this.postAction(action).then((returnval) => {
+		this._postAction(action).then((returnval) => {
 			console.log(returnval);
 		});
 	}
 
-	actionShutdownOS(action) {
+	shutdownOS(action) {
 		var action = "shutdown-os"
 
-		this.postAction(action).then((returnval) => {
+		this._postAction(action).then((returnval) => {
 			console.log(returnval);
-		});
-	}
-
-	async actionLogin() {
-		var action = "login"
-
-		let option = {
-			"login": user.login,
-			"password": user.password
-		};
-
-		return await this.postAction(action, option).then((returnval) => {
-
-			let cookie1s = returnval.headers['set-cookie'][0].split(';')
-			let cookie2s = returnval.headers['set-cookie'][1].split(';')
-			
-			this.cookie = cookie1s[0] + '; ' + cookie2s[0]
-
-			this.baseAxio.headers = {
-				'Cookie': this.cookie
-			}
-			
-			console.log('login ok');
-
-			this.recal = axios.create(this.baseAxio);
-		});
-	}
-
-	async actionNeedAuth() {
-		var option = "needAuth"
-
-		await this.getParser(option).then((returnval) => {
-
-			if(returnval.needAuth === true) {
-				this.actionLogin();
-				console.log('need auth', returnval.needAuth);
-			}
-
 		});
 	}
 
 	getCookie() {
-		console.log('retour de mon cookies apres login', this.cookie);
+		return this.cookie;
 	}
 
 }
 
 var api = new Recal();
 
-//api.getStatusES();
-//api.actionNeedAuth()
-
-api.actionTakeScreen()
-
-
-//api.actionTakeScreen();
+api.login().then(() => {
+		api.getVolume()
+		api.getTemp()
+		api.getCookie()
+	}
+);
