@@ -13,14 +13,11 @@ class Recal {
 	recal;
 	baseAxio =	{
 		baseURL: url,
-		timeout: 1000,
+		timeout: 10000,
 	}
 
 	constructor() {
-				
 		this.recal = axios.create(this.baseAxio);
-		this.actionNeedAuth()
-
 	}
 
 	getParser(option) {
@@ -151,9 +148,14 @@ class Recal {
 	actionTakeScreen() {
 		var action = "takeScreenshot"
 
-		this.postAction(action).then((returnval) => {
-			console.log(returnval);
+		this.actionNeedAuth().then(() => {
+
+			this.postAction(action).then((returnval) => {
+				console.log(returnval);
+			});
+
 		});
+		
 	}
 
 	actionDelScreen(file) {
@@ -227,7 +229,7 @@ class Recal {
 		});
 	}
 
-	actionLogin() {
+	async actionLogin() {
 		var action = "login"
 
 		let option = {
@@ -235,7 +237,7 @@ class Recal {
 			"password": user.password
 		};
 
-		this.postAction(action, option).then((returnval) => {
+		return await this.postAction(action, option).then((returnval) => {
 
 			let cookie1s = returnval.headers['set-cookie'][0].split(';')
 			let cookie2s = returnval.headers['set-cookie'][1].split(';')
@@ -252,10 +254,10 @@ class Recal {
 		});
 	}
 
-	actionNeedAuth() {
+	async actionNeedAuth() {
 		var option = "needAuth"
 
-		this.getParser(option).then((returnval) => {
+		await this.getParser(option).then((returnval) => {
 
 			if(returnval.needAuth === true) {
 				this.actionLogin();
@@ -274,7 +276,9 @@ class Recal {
 var api = new Recal();
 
 //api.getStatusES();
+//api.actionNeedAuth()
 
-api.getCookie()
+api.actionTakeScreen()
+
 
 //api.actionTakeScreen();
