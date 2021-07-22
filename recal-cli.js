@@ -1,10 +1,12 @@
-const axios = require('axios');
+const axios         = require('axios');
+const inquirer      = require('inquirer')
+const chalk         = require('chalk')
 
 const url = "http://192.168.1.25"
 
 const user = {
-	login : "fabrice",
-	password : "test"
+	login : "",
+	password : ""
 }
 
 class Recal {
@@ -26,15 +28,31 @@ class Recal {
 
 			return await this._getParser("needAuth").then( async (returnval) => {
 
-				console.log('test si besoin auth');
-
 				if(returnval.needAuth === true) {
 
-					console.log('need auth', returnval.needAuth);
-
 					if ( user.login === "" || user.password === "") {
-						console.log("login or password empty");
-						return;
+
+						await inquirer.prompt([
+							{
+								type: 'string',
+								name: 'login',
+								message: 'Login du manager recalbox :'
+							},
+							{
+								type: 'input',
+								name: 'password',
+								message: 'Mot de passe du manager recalbox :'
+							},
+						]).then(answers => {
+							console.log (answers.login)
+							console.log (answers.password)
+
+							user.login    = answers.login;
+							user.password = answers.password;
+
+							this.login();
+						});
+
 					} else {
 
 						let option = {
@@ -53,21 +71,13 @@ class Recal {
 								'Cookie': this.cookie
 							}
 							
-							console.log('login ok');
-
 							this.recal = axios.create(this.baseAxio);
-
-							return 'logged';
 
 						});
 
 					}
-				} else {
-					console.log('no need auth');
 				}
 			});
-		} else {
-			console.log('deja log');
 		}
 	}
 
@@ -230,47 +240,47 @@ class Recal {
 		var option = "ESStatus"
 
 		this._getParser(option).then((returnval) => {
-			console.log(returnval.ESStatus);
+			console.log(chalk.yellow('Status de ES : ') + chalk.green(returnval.ESStatus));
 		});
 	}
 
 	rebootES(action) {
 		var action = "reboot-es"
 
-		this._postAction(action).then((returnval) => {
-			console.log(returnval);
+		this._postAction(action).then(() => {
+			console.log(chalk.yellow('Reboot ES en cours'));
 		});
 	}
 
 	shutdownES(action) {
 		var action = "shutdown-es"
 
-		this._postAction(action).then((returnval) => {
-			console.log(returnval);
+		this._postAction(action).then(() => {
+			console.log(chalk.yellow('Extinction ES en cours'));
 		});
 	}
 
 	startES(action) {
 		var action = "start-es"
 
-		this._postAction(action).then((returnval) => {
-			console.log(returnval);
+		this._postAction(action).then(() => {
+			console.log(chalk.yellow('Demarage ES en cours'));
 		});
 	}
 
 	rebootOS(action) {
 		var action = "reboot-os"
 
-		this._postAction(action).then((returnval) => {
-			console.log(returnval);
+		this._postAction(action).then(() => {
+			console.log(chalk.yellow('Reboot en cours'));
 		});
 	}
 
 	shutdownOS(action) {
 		var action = "shutdown-os"
 
-		this._postAction(action).then((returnval) => {
-			console.log(returnval);
+		this._postAction(action).then(() => {
+			console.log(chalk.yellow('Extinction en cours'));
 		});
 	}
 
@@ -282,9 +292,65 @@ class Recal {
 
 var api = new Recal();
 
-api.login().then(() => {
-		api.takeScreen()
-		//api.getTemp()
-		//api.getCookie()
-	}
-);
+api.login().then( () => {
+
+	inquirer.prompt([
+		{
+			type: 'list',
+			name: 'type',
+			message: 'Quel action voulez-vous réaliser ?',
+			choices: ['Action rapide', 'Voir la temperature', 'Voir le volume', 'Prendre un Screen'],
+			default: 'Action rapide'
+		},
+	]).then(answers => {
+
+		switch (answers.type) {
+			case 'Action rapide':
+				
+				inquirer.prompt([
+					{
+						type: 'list',
+						name: 'type',
+						message: 'Quel action rapide voulez-vous réaliser ?',
+						choices: ['Restart ES', 'Stop ES', 'Status de ES', 'Reboot Recalbox', 'Shutdown Recalbox'],
+						default: 'Restart ES'
+					},
+				]).then(answers2 => {
+					
+					switch (answers2.type) {
+						case 'Status de ES':
+							api.getStatusES();
+							break;
+						case 'Restart ES':
+							api.rebootES(true);
+							break;
+						case 'Stop ES':
+							api.shutdownES(true);
+							break;
+						case 'Reboot Recalbox':
+							api.rebootOS(true);
+							break;
+						case 'Shutdown Recalbox':
+							api.shutdownOS(true);
+							break;
+					}
+				});
+
+				break;
+
+			case 'Voir la temperature':
+				api.getTemp();
+				break;
+			case 'Voir le volume':
+				api.getVolume();
+				break;
+			case 'Prendre un Screen':
+				api.takeScreen();
+				break;
+			default:
+				console.log('Action non supportée');
+		}
+
+	});
+
+});
