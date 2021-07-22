@@ -11,8 +11,10 @@ class Api extends Recal {
 	 * 
 	 */
 	async getTemp() {
-		await this._initialize();
-
+		if(await this._initialize() === false) {
+			return false;
+		}
+		
 		var option = "temperature"
 
 		this._getParser(option).then((returnval) => {
@@ -24,7 +26,9 @@ class Api extends Recal {
 	 * 
 	 */
 	async getCpu() {
-		await this._initialize();
+		if(await this._initialize() === false) {
+			return false;
+		}
 
 		var option = "cpus"
 
@@ -37,7 +41,9 @@ class Api extends Recal {
 	 * 
 	 */
 	async getRam() {
-		await this._initialize();
+		if(await this._initialize() === false) {
+			return false;
+		}
 
 		var option = "ram"
 
@@ -50,7 +56,9 @@ class Api extends Recal {
 	 * 
 	 */
 	async	getDisk() {
-		await this._initialize();
+		if(await this._initialize() === false) {
+			return false;
+		}
 
 		var option = "disks"
 
@@ -63,7 +71,9 @@ class Api extends Recal {
 	 * 
 	 */
 	async getVolume() {
-		await this._initialize();
+		if(await this._initialize() === false) {
+			return false;
+		}
 
 		var option = ['audio.device','audio.volume','audio.bgmusic']
 
@@ -73,7 +83,9 @@ class Api extends Recal {
 	}
 
 	async saveVolume(volume) {
-		await this._initialize();
+		if(await this._initialize() === false) {
+			return false;
+		}
 
 		var option = {
 			'audio.volume': volume
@@ -85,7 +97,9 @@ class Api extends Recal {
 	}
 
 	async saveKodi() {
-		await this._initialize();
+		if(await this._initialize() === false) {
+			return false;
+		}
 
 		var option = {
 			"kodi.enabled": "0",
@@ -99,7 +113,9 @@ class Api extends Recal {
 	}
 
 	async saveWifi(enabled, ssid, pass) {
-		await this._initialize();
+		if(await this._initialize() === false) {
+			return false;
+		}
 
 		let passw = pass.replace('#', '\#');
 
@@ -115,7 +131,9 @@ class Api extends Recal {
 	}
 
 	async takeScreen() {
-		await this._initialize();
+		if(await this._initialize() === false) {
+			return false;
+		}
 
 		var action = "takeScreenshot"
 
@@ -125,7 +143,9 @@ class Api extends Recal {
 	}
 
 	async delScreen(file) {
-		await this._initialize();
+		if(await this._initialize() === false) {
+			return false;
+		}
 
 		var action = "deleteScreenshot"
 
@@ -139,7 +159,9 @@ class Api extends Recal {
 	}
 
 	async getScreen() {
-		await this._initialize();
+		if(await this._initialize() === false) {
+			return false;
+		}
 
 		var action = "screenshotsList"
 
@@ -154,7 +176,9 @@ class Api extends Recal {
 	 * @return ok or ko
 	 */
 	async getStatusES() {
-		await  this._initialize();
+		if(await this._initialize() === false) {
+			return false;
+		}
 
 		var option = "ESStatus"
 
@@ -164,7 +188,9 @@ class Api extends Recal {
 	}
 
 	async rebootES(action) {
-		await this._initialize();
+		if(await this._initialize() === false) {
+			return false;
+		}
 
 		var action = "reboot-es"
 
@@ -174,7 +200,9 @@ class Api extends Recal {
 	}
 
 	async shutdownES(action) {
-		await this._initialize();
+		if(await this._initialize() === false) {
+			return false;
+		}
 
 		var action = "shutdown-es"
 
@@ -184,7 +212,9 @@ class Api extends Recal {
 	}
 
 	async startES(action) {
-		await this._initialize();
+		if(await this._initialize() === false) {
+			return false;
+		}
 
 		var action = "start-es"
 
@@ -194,8 +224,9 @@ class Api extends Recal {
 	}
 
 	async rebootOS(action) {
-		await this._initialize();
-
+		if(await this._initialize() === false) {
+			return false;
+		}
 		var action = "reboot-os"
 
 		this._postAction(action).then((returnval) => {
@@ -204,8 +235,9 @@ class Api extends Recal {
 	}
 
 	async shutdownOS(action) {
-		await this._initialize();
-
+		if(await this._initialize() === false) {
+			return false;
+		}
 		var action = "shutdown-os"
 
 		this._postAction(action).then((returnval) => {
