@@ -4,7 +4,9 @@
   "description": "Send love to recalbox with api",
   "main": "recal.js",
   "dependencies": {
-    "axios": "^0.21.1"
+    "axios": "^0.21.1",
+    "chalk": "^4.1.1",
+    "inquirer": "^8.1.2"
   },
   "devDependencies": {},
   "scripts": {
