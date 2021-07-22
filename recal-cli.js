@@ -2,7 +2,7 @@ const axios         = require('axios');
 const inquirer      = require('inquirer')
 const chalk         = require('chalk')
 
-const url = "http://192.168.1.25"
+const url = "http://recalbox"
 
 const user = {
 	login : "",

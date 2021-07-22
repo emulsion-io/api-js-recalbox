@@ -1,10 +1,10 @@
 const axios = require('axios');
 
-const url = "http://192.168.1.25"
+const url = "http://recalbox"
 
 const user = {
-	login : "fabrice",
-	password : "test"
+	login : "",
+	password : ""
 }
 
 class Recal {
