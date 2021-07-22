@@ -82,7 +82,7 @@ class Recal {
 
 	async _initialize() {
 		if (!this.initializationPromise) {
-		  this.initializationPromise = this._login();
+		  this.initializationPromise = await this._login();
 		}
 		return this.initializationPromise;
 	}

@@ -31,7 +31,7 @@ class Recal {
 
 				if(returnval.needAuth === true) {
 
-					console.log('need auth', returnval.needAuth);
+					console.log('need auth : ', returnval.needAuth);
 
 					if ( this.user.login === "" || this.user.password === "") {
 						console.log("login or password empty");
@@ -74,9 +74,8 @@ class Recal {
 	}
 
 	async _initialize() {
-		// prevent concurrent calls firing initialization more than once
 		if (!this.initializationPromise) {
-		  this.initializationPromise = this._login();
+			this.initializationPromise = await this._login();
 		}
 		return this.initializationPromise;
 	}

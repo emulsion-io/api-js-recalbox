@@ -214,9 +214,11 @@ class Api extends Recal {
 	}
 
 	async getCookie() {
-		console.log(await this._initialize());
+		if(await this._initialize() === false) {
+			return false;
+		}
 		
-		console.log(this.cookie);
+		console.log('cookie : ', this.cookie);
 	}
 
 }
