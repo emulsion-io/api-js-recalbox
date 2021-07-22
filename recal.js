@@ -10,6 +10,7 @@ const user = {
 class Recal {
 
 	recal;
+	response;
 	cookie = null;
 	baseAxio =	{
 		baseURL: url,
@@ -20,11 +21,10 @@ class Recal {
 		this.recal = axios.create(this.baseAxio);
 	}
 
-	async login() {
-
+	async _login() {
 		if (this.cookie === null) {
 
-			return await this._getParser("needAuth").then( async (returnval) => {
+			await this._getParser("needAuth").then( async (returnval) => {
 
 				console.log('test si besoin auth');
 
@@ -71,6 +71,14 @@ class Recal {
 		}
 	}
 
+	async _initialize() {
+		// prevent concurrent calls firing initialization more than once
+		if (!this.initializationPromise) {
+		  this.initializationPromise = this._login();
+		}
+		return this.initializationPromise;
+	}
+
 	_getParser(option) {
 		return this.recal.get('/get?option=' + option)
 			.then(function (response) {
@@ -106,7 +114,9 @@ class Recal {
 	/**
 	 * 
 	 */
-	getTemp() {
+	async getTemp() {
+		await this._initialize();
+
 		var option = "temperature"
 
 		this._getParser(option).then((returnval) => {
@@ -117,7 +127,9 @@ class Recal {
 	/**
 	 * 
 	 */
-	getCpu() {
+	async getCpu() {
+		await this._initialize();
+
 		var option = "cpus"
 
 		this._getParser(option).then((returnval) => {
@@ -128,7 +140,9 @@ class Recal {
 	/**
 	 * 
 	 */
-	getRam() {
+	async getRam() {
+		await this._initialize();
+
 		var option = "ram"
 
 		this._getParser(option).then((returnval) => {
@@ -139,7 +153,9 @@ class Recal {
 	/**
 	 * 
 	 */
-	getDisk() {
+	async	getDisk() {
+		await this._initialize();
+
 		var option = "disks"
 
 		this._getParser(option).then((returnval) => {
@@ -150,7 +166,9 @@ class Recal {
 	/**
 	 * 
 	 */
-	 getVolume() {
+	async getVolume() {
+		await this._initialize();
+
 		var option = ['audio.device','audio.volume','audio.bgmusic']
 
 		this._grepParser(option).then((returnval) => {
@@ -158,7 +176,9 @@ class Recal {
 		});
 	}
 
-	saveVolume(volume) {
+	async saveVolume(volume) {
+		await this._initialize();
+
 		var option = {
 			'audio.volume': volume
 		}
@@ -168,7 +188,9 @@ class Recal {
 		});
 	}
 
-	saveKodi() {
+	async saveKodi() {
+		await this._initialize();
+
 		var option = {
 			"kodi.enabled": "0",
 			"kodi.atstartup": "0",
@@ -180,7 +202,8 @@ class Recal {
 		});
 	}
 
-	saveWifi(enabled, ssid, pass) {
+	async saveWifi(enabled, ssid, pass) {
+		await this._initialize();
 
 		let passw = pass.replace('#', '\#');
 
@@ -195,7 +218,9 @@ class Recal {
 		});
 	}
 
-	takeScreen() {
+	async takeScreen() {
+		await this._initialize();
+
 		var action = "takeScreenshot"
 
 		this._postAction(action).then((returnval) => {
@@ -203,7 +228,9 @@ class Recal {
 		});
 	}
 
-	delScreen(file) {
+	async delScreen(file) {
+		await this._initialize();
+
 		var action = "deleteScreenshot"
 
 		var option = {
@@ -215,7 +242,9 @@ class Recal {
 		});
 	}
 
-	getScreen() {
+	async getScreen() {
+		await this._initialize();
+
 		var action = "screenshotsList"
 
 		this._getParser(action).then((returnval) => {
@@ -224,9 +253,13 @@ class Recal {
 	}
 
 	/**
+	 * Retourne le status actuel de EmulationStation
+	 * 
 	 * @return ok or ko
 	 */
-	getStatusES() {
+	async getStatusES() {
+		await  this._initialize();
+
 		var option = "ESStatus"
 
 		this._getParser(option).then((returnval) => {
@@ -234,7 +267,9 @@ class Recal {
 		});
 	}
 
-	rebootES(action) {
+	async rebootES(action) {
+		await this._initialize();
+
 		var action = "reboot-es"
 
 		this._postAction(action).then((returnval) => {
@@ -242,7 +277,9 @@ class Recal {
 		});
 	}
 
-	shutdownES(action) {
+	async shutdownES(action) {
+		await this._initialize();
+
 		var action = "shutdown-es"
 
 		this._postAction(action).then((returnval) => {
@@ -250,7 +287,9 @@ class Recal {
 		});
 	}
 
-	startES(action) {
+	async startES(action) {
+		await this._initialize();
+
 		var action = "start-es"
 
 		this._postAction(action).then((returnval) => {
@@ -258,7 +297,9 @@ class Recal {
 		});
 	}
 
-	rebootOS(action) {
+	async rebootOS(action) {
+		await this._initialize();
+
 		var action = "reboot-os"
 
 		this._postAction(action).then((returnval) => {
@@ -266,7 +307,9 @@ class Recal {
 		});
 	}
 
-	shutdownOS(action) {
+	async shutdownOS(action) {
+		await this._initialize();
+
 		var action = "shutdown-os"
 
 		this._postAction(action).then((returnval) => {
@@ -274,7 +317,9 @@ class Recal {
 		});
 	}
 
-	getCookie() {
+	async getCookie() {
+		await this._initialize();
+		
 		return this.cookie;
 	}
 
@@ -282,9 +327,5 @@ class Recal {
 
 var api = new Recal();
 
-api.login().then(() => {
-		api.takeScreen()
-		//api.getTemp()
-		//api.getCookie()
-	}
-);
+api.getStatusES();
+api.takeScreen();
